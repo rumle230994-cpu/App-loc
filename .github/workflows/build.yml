@@ -25,23 +25,27 @@ jobs:
 
       - name: Build App Project
         run: |
-          # Tự động đồng bộ cấu hình Android SDK nội bộ của máy chủ
           flutter config --no-analytics
           
-          # Khởi tạo dự án độc lập với cấu hình Android bắt buộc
-          flutter create --template=app --platforms=android .
+          # Quay ra thư mục cha để tạo app hoàn toàn mới, tránh lỗi trùng file
+          cd ..
+          flutter create --platforms=android ung_dung_loc_mau
           
-          # Ghi đè mã nguồn bộ lọc vào cấu hình hệ thống
+          cd ung_dung_loc_mau
+          
+          # Ghi đè mã nguồn bộ lọc mô phỏng vào dự án sạch
           cat << 'EOF' > lib/main.dart
           import 'package:flutter/material.dart';
-          void main() => runApp(const MaterialApp(home: Scaffold(body: Center(child: Text('App Filter System Running')))));
+          void main() => runApp(const MaterialApp(home: Scaffold(body: Center(child: Text('He thong loc mau dang hoat dong')))));
           EOF
           
-          # Thực hiện biên dịch trực tiếp ra file cài đặt APK thông thường
           flutter build apk --release --no-tree-shake-icons
+          
+          # Chép file thành phẩm ngược lại thư mục gốc để nộp file
+          cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/app-release.apk
 
       - name: Upload Output APK
         uses: actions/upload-artifact@v3
         with:
-          name: App_Loc_Mau_Kha_Dung
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: App_Tai_Ve_Dien_Thoai
+          path: app-release.apk
